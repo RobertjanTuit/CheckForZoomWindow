@@ -1,0 +1,1 @@
+Check for a zoom window to be open and then turn on or off elgate lights.
