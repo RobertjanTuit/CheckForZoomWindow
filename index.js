@@ -1,8 +1,27 @@
-const keylights = ['keylight-left.office.localdomain', 'keylight-right.office.localdomain'];
 
+const keylights = ['keylight-left.office.localdomain', 'keylight-right.office.localdomain'];
 import { windowManager } from 'node-window-manager';
 import fetch from 'node-fetch';
 import robot from "robotjs";
+import lockYourWindows from  'lock-your-windows';
+import stringKit from 'string-kit';
+import moment from 'moment/moment.js';
+
+
+function log(msg, category = '') {
+
+    let log = `^y${moment().format('HH:mm:ss.SSS')}^w `;
+    if (typeof msg === 'object') {
+        msg = JSON.stringify(msg);
+    }
+    if (category != '') {
+        log += ` ^b[${category}]^w `;
+    }
+
+    log += msg;
+  
+    console.log(stringKit.format(log));
+}
 
 function getLightData(on, brightness = null, temperature = null)
 {
@@ -38,30 +57,34 @@ function zoomMeeting(isMeetingNew) {
     if (isMeetingNew !== isMeeting) {
         isMeeting = isMeetingNew;
         if (isMeeting) {
-            console.log('Zoom Meeting window found --> Turning on lights');
-            fixVideoAndCams();
+            log('Zoom Meeting window found --> Turning on lights');
             setLights(1);
         }   
         else {
-            console.log('Meeting ended --> Turning off lights');
+            log('Meeting ended --> Turning off lights');
             setLights(0);
         }
     }
 };
 
+let fixVideoAndCamsTimeout;
 function fixVideoAndCams() {
-    console.log('Fixing video and cams...');
-    robot.keyTap('j', ['control', 'alt', 'shift']);
-    robot.keyTap('l', ['control', 'alt', 'shift']);
+    clearTimeout(fixVideoAndCamsTimeout);
+    if (lockYourWindows.isLocked()) {
+        fixVideoAndCamsTimeout = setTimeout(fixVideoAndCams, 1000);
+        log('System is locked --> not fixing cams and video yet, checking again in 1s.');
+        return;
+    }
+    log('Fixing video and cams...');
+    robot.keyTap('l', ['control', 'alt', 'shift']); // configured in obs to hide cam and layer
     setTimeout(() => {
-        robot.keyTap('j', ['control', 'alt', 'shift']);
-        robot.keyTap('k', ['control', 'alt', 'shift']);
+        robot.keyTap('k', ['control', 'alt', 'shift']); // configured in obs to show cam and switch to video layer.
     }, 2000);
 }
 
 function startWindowCheck()
 {
-    console.log('Checking for zoom windows...');
+    log('Checking for zoom windows...');
     setInterval(() => {
         var zoomWindows = windowManager.getWindows().filter((window) => {
         return window.getTitle()?.indexOf('Zoom Meeting') !== -1;
@@ -79,18 +102,18 @@ const suspendCheckInterval = 2000;
 const suspendCheckMargin = 1000;
 let ts;
 function startSuspendSleepCheck() {
-    console.log('Checking for suspend/sleep/hibernate...');
+    log('Checking for resume from suspend/sleep/hibernate...');
     ts = new Date().getTime();
-    suspendSleepCheckLoop(ts);
+    suspendSleepCheckLoop();
 }
 
-function suspendSleepCheckLoop(ts) {
+function suspendSleepCheckLoop() {
     setTimeout(() => {
         let newTs = new Date().getTime();
         const tsDiff = newTs - ts;
-        if (tsDiff > suspendCheckInterval + suspendCheckMargin) {
-            console.log('System is waking up --> Turning on lights');
-            setTimeout(fixVideoAndCams, 6000);
+        if (tsDiff > (suspendCheckInterval + suspendCheckMargin)) {
+            log('System is waking up...');
+            fixVideoAndCams();
         }
         ts = newTs;
         suspendSleepCheckLoop();
