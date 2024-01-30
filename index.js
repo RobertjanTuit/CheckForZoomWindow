@@ -10,12 +10,12 @@ import moment from 'moment/moment.js';
 
 function log(msg, category = '') {
 
-    let log = `^w[^gCFZW^w] ^y${moment().format('HH:mm:ss.SSS')}^w `;
+    let log = `^gCFZW^w | ^y${moment().format('HH:mm:ss.SSS')}^w | `;
     if (typeof msg === 'object') {
         msg = JSON.stringify(msg);
     }
     if (category != '') {
-        log += ` ^b[${category}]^w `;
+        log += ` ^b${category}^w | `;
     }
 
     log += msg;

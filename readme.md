@@ -1,1 +1,2 @@
 Check for a zoom window to be open and then turn on or off elgate lights.
+Also check for resume from suspend and sleep and execute a few glkobal shortcuts which can be picked up by other software to reset cams and audio.
