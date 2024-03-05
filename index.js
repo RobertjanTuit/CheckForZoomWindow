@@ -32,16 +32,20 @@ function getLightData(on, brightness = null, temperature = null)
 
 async function put(host, data)
 {
-    const postBody = JSON.stringify(data);
-    const response = await fetch(
-        `http://${host}:9123/elgato/lights`, 
-        {
-            method: 'PUT', 
-            body: postBody, 
-            headers: { 'Content-type': 'application/json' }
-        });
-
-    await response.text();
+    try {
+        const postBody = JSON.stringify(data);
+        const response = await fetch(
+            `http://${host}:9123/elgato/lights`, 
+            {
+                method: 'PUT', 
+                body: postBody, 
+                headers: { 'Content-type': 'application/json' }
+            });
+    
+        await response.text();
+    } catch (error) {
+        log(`Error: ^r${error}`);        
+    }
 }
 
 async function setLights(on, brightness = null, temperature = null)
@@ -49,6 +53,7 @@ async function setLights(on, brightness = null, temperature = null)
     for (const keylight of keylights) {
         await put(keylight, getLightData(on, brightness, temperature));
     }
+    log('Lights: ' + (on ? 'ON' : 'OFF'));
 }
 
 
@@ -58,6 +63,7 @@ function zoomMeeting(isMeetingNew) {
         isMeeting = isMeetingNew;
         if (isMeeting) {
             log('Zoom Meeting window found --> Turning on lights');
+            fixVideoAndCams();
             setLights(1);
         }   
         else {
@@ -76,9 +82,9 @@ function fixVideoAndCams() {
         return;
     }
     log('Fixing video and cams...');
-    robot.keyTap('l', ['control', 'alt', 'shift']); // configured in obs to hide cam and layer
+    robot.keyTap('l', ['control', 'shift']); // configured in obs to hide cam and layer
     setTimeout(() => {
-        robot.keyTap('k', ['control', 'alt', 'shift']); // configured in obs to show cam and switch to video layer.
+        robot.keyTap('k', ['control', 'shift']); // configured in obs to show cam and switch to video layer.
     }, 2000);
 }
 
@@ -122,6 +128,7 @@ function suspendSleepCheckLoop() {
 }
 
 
+await setLights(0);
 startWindowCheck();
 startSuspendSleepCheck();
 //process.stdin.setRawMode( true );
