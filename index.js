@@ -7,7 +7,6 @@ import lockYourWindows from  'lock-your-windows';
 import stringKit from 'string-kit';
 import moment from 'moment/moment.js';
 
-
 function log(msg, category = '') {
 
     let log = `^gCFZW^w | ^y${moment().format('HH:mm:ss.SSS')}^w | `;
@@ -55,7 +54,6 @@ async function setLights(on, brightness = null, temperature = null)
     }
     log('Lights: ' + (on ? 'ON' : 'OFF'));
 }
-
 
 let isMeeting = false;
 function zoomMeeting(isMeetingNew) {
@@ -127,7 +125,9 @@ function suspendSleepCheckLoop() {
     return ts;
 }
 
-
+log('--------------------------------------');
+log('| Starting CFZW v1.0 ');
+log('--------------------------------------');
 await setLights(0);
 startWindowCheck();
 startSuspendSleepCheck();
