@@ -11,6 +11,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
   "license": "ISC",
   "dependencies": {
     "ahk.exe": "^1.2.1",
