@@ -43,12 +43,11 @@ async function put(host, data) {
     await response.text();
   } catch (error) {
     log(`Error: ^r${error}`);
-  }
 }
 
 async function setLights(on, brightness = null, temperature = null) {
   for (const keylight of keylights) {
-    await put(keylight, getLightData(on, brightness, temperature));
+    put(keylight, getLightData(on, brightness, temperature));
   }
   log('Lights: ' + (on ? 'ON' : 'OFF'));
 }
@@ -80,6 +79,7 @@ function fixVideoAndCams() {
   }
   log('Fixing video and cams...');
   robot.keyTap('l', ['control', 'shift']); // configured in obs to hide cam and layer
+  robot.keyTap('k', ['control']); // vociemeter engine restart
   setTimeout(() => {
     robot.keyTap('k', ['control', 'shift']); // configured in obs to show cam and switch to video layer.
   }, 2000);
@@ -111,8 +111,13 @@ function startSuspendSleepCheck() {
   suspendSleepCheckLoop();
 }
 
+let locked = false;
 function suspendSleepCheckLoop() {
   setTimeout(() => {
+    if (lockYourWindows.isLocked() != locked) {
+      locked = lockYourWindows.isLocked();
+      fixVideoAndCams();
+    }
     let newTs = new Date().getTime();
     const tsDiff = newTs - ts;
     if (tsDiff > suspendCheckInterval + suspendCheckMargin) {
@@ -131,6 +136,7 @@ log('--------------------------------------');
 await setLights(0);
 startWindowCheck();
 startSuspendSleepCheck();
+robot.keyTap('k', ['control']); // vociemeter engine restart
 // process.stdin.setRawMode( true );
 // process.stdin.setEncoding( 'utf8' );
 // on any data into stdin
