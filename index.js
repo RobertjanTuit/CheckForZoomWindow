@@ -43,6 +43,7 @@ async function put(host, data) {
     await response.text();
   } catch (error) {
     log(`Error: ^r${error}`);
+  }
 }
 
 async function setLights(on, brightness = null, temperature = null) {
@@ -79,7 +80,7 @@ function fixVideoAndCams() {
   }
   log('Fixing video and cams...');
   robot.keyTap('l', ['control', 'shift']); // configured in obs to hide cam and layer
-  robot.keyTap('k', ['control']); // vociemeter engine restart
+  robot.keyTap('f1', ['control']); // vociemeter engine restart
   setTimeout(() => {
     robot.keyTap('k', ['control', 'shift']); // configured in obs to show cam and switch to video layer.
   }, 2000);
@@ -112,6 +113,7 @@ function startSuspendSleepCheck() {
 }
 
 let locked = false;
+let systemWake = 0;
 function suspendSleepCheckLoop() {
   setTimeout(() => {
     if (lockYourWindows.isLocked() != locked) {
@@ -120,7 +122,11 @@ function suspendSleepCheckLoop() {
     }
     let newTs = new Date().getTime();
     const tsDiff = newTs - ts;
-    if (tsDiff > suspendCheckInterval + suspendCheckMargin) {
+    if (
+      tsDiff > suspendCheckInterval + suspendCheckMargin &&
+      newTs - systemWake > 30000
+    ) {
+      systemWake = newTs;
       log('System is waking up...');
       fixVideoAndCams();
     }
@@ -145,6 +151,5 @@ process.stdin.on('data', function (key) {
   if (key === '\u0003') {
     process.exit();
   }
-  // write the key to stdout all normal like
   process.stdout.write(key);
 });
