@@ -5,10 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "npx pm2 kill && pm2 resurrect && npm run stop & npx pm2 start index.js -f --watch && npm run log",
-    "stop": "npx pm2 delete index.js -s",
-    "log": "npx pm2 logs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "author": "",
   "prettier": {
@@ -17,6 +14,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "16": "^0.0.2",
     "ahk.exe": "^1.2.1",
     "lock-your-windows": "^0.0.2",
     "moment": "^2.30.1",
